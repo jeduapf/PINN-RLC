@@ -65,7 +65,6 @@ def init_weights(m):
         torch.nn.init.xavier_uniform_(m.weight)
         m.bias.data.fill_(1.0)
 
-# TODO: add boundary loss condition and respective changes on graphs
 class PhysicsInformedNN:
     # Initialize the class
 

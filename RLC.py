@@ -2,6 +2,11 @@ from utils.rlc_pinn import apply_RLC_PINN
 from itertools import product
 from tqdm import tqdm
 
+# TODO: implemente analytical solution as python function and add noise to observed data
+# TODO: add boundary loss condition and respective changes on graphs in PINN class and utils graphs
+# TODO: Maybe integrate Matlab too ? 
+
+# For more information check ==> https://github.com/jmorrow1000/PINN-iPINN/tree/main
 if __name__ == "__main__": 
 
     R = 1.2
