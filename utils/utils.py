@@ -10,9 +10,9 @@ import matplotlib.pyplot as plt
 import mat73
 import os
 
-def save_paths():
+def save_paths(folder = 'Results'):
     current_dir = os.getcwd()
-    SAVE_DIR = os.path.join(current_dir,'Results')
+    SAVE_DIR = os.path.join(current_dir,folder)
     try:
         os.mkdir(SAVE_DIR)
     except:
@@ -155,3 +155,7 @@ def save_plt(i, model,  X_star, u_star):
     plt.legend()
 
     return fig
+
+def save_txt(string, PATH):
+    with open(PATH, 'w') as file:
+        file.write(string)

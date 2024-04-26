@@ -294,3 +294,5 @@ class PhysicsInformedNN:
             print('Error R/L: %.5f%%' % (error_lambda_1[0]))
             print(f'L*C: {LC[0]}')
             print('Error L*C: %.5f%%' % (error_lambda_2[0]))
+
+        return f'Error u: {error_u:e}\t\tError R/L: {error_lambda_1[0]:.5f}\t\tError L*C: {error_lambda_2[0]:.5f}'
