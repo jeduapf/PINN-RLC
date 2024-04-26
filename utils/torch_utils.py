@@ -2,7 +2,7 @@ import torch
 from torchsummary import summary
 from collections import OrderedDict
 import numpy as np
-from utils import *
+from utils.utils import *
 
 # CUDA support 
 if torch.cuda.is_available():
@@ -31,7 +31,7 @@ class ANN(torch.nn.Module):
             - torch object model. Linked Sequential layers
 
     '''
-    def __init__(self, inputs, outputs, activation_func = torch.nn.Tanh):
+    def __init__(self, inputs, outputs, layers = 8, neurons = 20, activation_func = torch.nn.Tanh):
 
         assert isinstance(inputs,int) and isinstance(outputs,int) and inputs > 0 and outputs > 0, "Input layer and Output layer must be non negative values except 0 !"
         
@@ -40,7 +40,7 @@ class ANN(torch.nn.Module):
 
         self.inp = inputs
         self.out = outputs
-        self.ann = [self.inp, 20, 20, 20, 20, 20, 20, 20, 20, self.out]
+        self.ann = [self.inp] + layers*[neurons] + [self.out]
         self.depth = len(self.ann) - 1
         self.activation = activation_func
 
@@ -65,6 +65,7 @@ def init_weights(m):
         torch.nn.init.xavier_uniform_(m.weight)
         m.bias.data.fill_(1.0)
 
+# TODO: add boundary loss condition and respective changes on graphs
 class PhysicsInformedNN:
     # Initialize the class
 
@@ -84,7 +85,7 @@ class PhysicsInformedNN:
         So to get y input values of the function h, just cut the matrix as X[:,2] => [y1, y2,..., yn]
                                                                            X[:,2:3] => [[y1, y2,..., yn]]
     '''
-    def __init__(self, X_star, u_star, X_observations, u_observations, R ,L ,C, inputs, outputs, guess, SHOW_MODEL, SHOW_PRINTS= False, SHOW_ITER = 100, GIF_FIGS = 99, SAVE_DIR_GIF = None):
+    def __init__(self, X_star, u_star, X_observations, u_observations, R ,L ,C, inputs, outputs, guess, layer, neuron, SHOW_MODEL = False, SHOW_PRINTS= False, SHOW_ITER = 100, GIF_FIGS = 99, SAVE_DIR_GIF = None):
         
         # Visualizations variables
         self.SHOW_ITER = SHOW_ITER
@@ -116,7 +117,7 @@ class PhysicsInformedNN:
         self.LC = torch.nn.Parameter(torch.tensor([float(self.guess[1])], requires_grad=True).to(device))
         
         # deep neural networks
-        self.ann = ANN(inputs, outputs, activation_func = torch.nn.Tanh).to(device)
+        self.ann = ANN(inputs, outputs, layers = layer, neurons = neuron, activation_func = torch.nn.Tanh).to(device)
         self.ann.register_parameter('RL', self.RL)
         self.ann.register_parameter('LC', self.LC)
         self.ann.apply(init_weights)

@@ -34,6 +34,12 @@ def import_matlab_data(out = "u.mat", inp = "sin.mat",DATA_PATH =r"C:\Users\jedu
     u_star = u_star['u'][1,:].T
     u_star = u_star[:,np.newaxis]
 
+    #          X_star       u_star
+    #        [ t , v(t)]   [ i(t) ]
+    #          t1 , v1        i1
+    #          t2 , v2        i2
+    # points     ...          ...
+    #          tN , vN        iN
     return X_star, u_star
 
 def plot_ground_truth(X_star, u_star, SAVE_DIR):
