@@ -1,5 +1,6 @@
 from utils import *
 import sys
+import matplotlib.pyplot as plt
 
 def apply_RLC_PINN( R = 1.2, L = 1.5, C = 0.3, training_points = 150,
                     guess = [10.0, -8.0], lbd = 10**3, iterations = 2000, LBFGS = True,
@@ -16,6 +17,39 @@ def apply_RLC_PINN( R = 1.2, L = 1.5, C = 0.3, training_points = 150,
     # ****************************** Initializating the model ******************************
 
     X_star, u_star = import_matlab_data(out = "u.mat", inp = "sin.mat")
+
+    t_init = X_star[0,0]
+    t_final = X_star[-1,0]
+    points = X_star.shape[0]
+    Vin = 1.0
+
+    # Creating exact solution
+    t = np.linspace(t_init,t_final,points)
+    Vin_vec = np.array([Vin]*len(t))
+
+    X_star_python = np.hstack((t[:,np.newaxis],Vin_vec[:,np.newaxis]))
+    u_star_python = exact_solution(t, R, L, C, Vin, SNR = 10**3, eps = 10**-9)
+
+    print(X_star_python.shape)
+    print(X_star.shape)
+    print(np.abs(X_star_python-X_star))
+    print()
+    print(u_star_python.shape)
+    print(u_star.shape)
+    print(np.abs(u_star_python-u_star))
+
+    plt.figure(figsize=(15,10))
+    plt.subplot(2,1,1)
+    plt.plot(X_star[:,0], X_star[:,1], label="Matlab input")
+    plt.plot(X_star_python[:,0], X_star_python[:,1], label="Python input")
+    plt.legend()
+
+    plt.subplot(2,1,2)
+    plt.plot(X_star[:,0], u_star[:,0], label="Matlab output")
+    plt.plot(X_star_python[:,0], u_star_python[:,0], label="Python output")
+    plt.legend()
+    plt.show()
+
 
     N_u = training_points   # Number of randomly observed points
     iterations = iterations # Adam descending steps
