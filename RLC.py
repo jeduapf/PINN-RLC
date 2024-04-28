@@ -1,39 +1,43 @@
 from utils.rlc_pinn import apply_RLC_PINN
-from itertools import product
-from tqdm import tqdm
+from utils.utils import exact_solution
+import numpy as np
 
-# TODO: implemente analytical solution as python function and add noise to observed data
 # TODO: add boundary loss condition and respective changes on graphs in PINN class and utils graphs
-# TODO: Maybe integrate Matlab too ? 
 
 # For more information check ==> https://github.com/jmorrow1000/PINN-iPINN/tree/main
 if __name__ == "__main__": 
 
-    R = 1.2
-    L = 1.5
-    C = 0.3
-    RL_gt = R/L # R/L = 0,8
-    LC_gt = L*C # 1/LC = 2,222
+    # Real System Definitions
+    L = 1.5         # Henries
+    C = 0.3         # Faradays
+    R = 0.5         # Ohms
+    Vin = 100.0     # V
+    t_init = 0      # s
+    t_final = 10    # s
+    points = 10**4  # -
 
-    points = [10,50]
-    guesses = [[-20.0,-10.0], [0.0,0.0], [10.0,10.0], [-10.0,20.0], [10.0,100.0],]
-    lambdas = [10**2, 10**4]
-    adam_iter = [6*10**2, 3*10**3]
-    LBFGSs = [True, False]
-    # Layers = [3, 6, 9]
-    # Neurons = [8, 16, 32, 64]
-    Layers = [3, 9]
-    Neurons = [8, 32]
-    ALL = list(product(points, guesses, lambdas, adam_iter, LBFGSs, Layers, Neurons))
+    noise = 10              # db
+    mu = 0                  # noise center
+    sigma = np.sqrt(np.sqrt(Vin))    # noise standard deviation
 
-    print(f"\n\n\t\t\t Starting Monte Carlo Grid Simulation of {len(ALL)} scenarios, \n\t\t\t\t\tGRAB SOME COFFEE ! \n\n")
-    for (point, gues, lambd, adam_ite, LBFGS, Layer, Neuron) in tqdm(ALL):
-        apply_RLC_PINN( R, L, C, training_points = point,
-                        guess = gues, lbd = lambd, iterations = adam_ite, LBFGS = LBFGS,
-                        layers = Layer, neurons = Neuron,
-                        DATA_PATH = r"C:\Users\jedua\Documents\INSA\Python\PINN\PINN-RLC", 
-                        GIF_FIGS = 99,
-                        SHOW_ITER = 50,
-                        SHOW_PRINTS = False,
-                        SHOW_MODEL = False,
-                        SAVE_RESULTS = True)
+    # Neural Network Hyperparameters
+    training_points = 150 
+    lbd = 10**3 
+    iterations = 2000
+    guess = [10.0, -8.0]
+
+    # Neural Network Structure
+    LBFGS = True
+    layers = 8
+    neurons = 20
+
+   apply_RLC_PINN( t_init, t_final, points, training_points,
+                    R , L, C , Vin ,
+                    guess, lbd, iterations, LBFGS,
+                    layers, neurons,
+                    GIF_FIGS = 99,
+                    SHOW_ITER = 50,
+                    SHOW_PRINTS = True,
+                    SHOW_MODEL = False,
+                    SAVE_RESULTS = True)
+    

@@ -10,6 +10,41 @@ import matplotlib.pyplot as plt
 import mat73
 import os
 
+def exact_solution(t, R, L, C, Vin, SNR = 0.0, mu = 0, sigma = 1, eps = 10**-9):
+    assert isinstance(R,float) and isinstance(L,float) and isinstance(C,float) and isinstance(Vin,float), "All values R,L,C,Vin must be floats"
+    assert R > 0 and L > 0 and C > 0 and Vin > 0, "All values R,L,C,Vin must be greater than 0"
+
+    kappa = (C*R**2 - 4*L)/C
+
+    if kappa < eps and kappa > 0:
+        A = C*Vin
+        alpha = -R/(2*L)
+        sol = A*(1+np.exp(alpha*t)*(t-1))
+
+    elif kappa > eps:
+        A = C*Vin
+        delta = np.emath.sqrt(kappa)
+
+        alpha1 = (-R + delta)/(2*L)
+        alpha2 = (-R - delta)/(2*L)
+        sol = A*(1 +(alpha1/(alpha2-alpha1))*np.exp(alpha2*t) -(alpha2/(alpha2-alpha1))*np.exp(alpha1*t))
+
+    else:
+        A = C*Vin
+        delta = np.emath.sqrt(kappa)
+
+        alpha1 = (-R + delta)/(2*L)
+        alpha2 = (-R - delta)/(2*L)
+        sol = np.abs(A*(1 +(alpha1/(alpha2-alpha1))*np.exp(alpha2*t) -(alpha2/(alpha2-alpha1))*np.exp(alpha1*t)))
+
+    # Adding noise 
+    if SNR < 10**3:
+        Vn = A/(10**(SNR/20))
+    else :
+        Vn = 0
+
+    return sol[:,np.newaxis] + Vn*np.random.normal(mu, sigma, size=(len(t), 1))
+
 def save_paths(folder = 'Results'):
     current_dir = os.getcwd()
     SAVE_DIR = os.path.join(current_dir,folder)

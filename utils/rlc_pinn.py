@@ -1,21 +1,27 @@
 from utils import *
 import sys
 
-def apply_RLC_PINN( R = 1.2, L = 1.5, C = 0.3, training_points = 150,
+def apply_RLC_PINN( t_init = 0, t_final = 10, points = 10**4, training_points = 150,
+                    R = 1.2, L = 1.5, C = 0.3, Vin = 10.0, noise = 0.0,
                     guess = [10.0, -8.0], lbd = 10**3, iterations = 2000, LBFGS = True,
                     layers = 8, neurons = 20,
-                    DATA_PATH = r"C:\Users\jedua\Documents\INSA\Python\PINN\PINN-RLC", 
                     GIF_FIGS = 99,
                     SHOW_ITER = 50,
                     SHOW_PRINTS = False,
                     SHOW_MODEL = False,
                     SAVE_RESULTS = True):  
     
-    SAVE_DIR, SAVE_DIR_GIF = save_paths(f"layers_{layers}__neurons_{neurons}__RLC__{R:.2f}_{L:.2f}_{C:.2f}_Iter_{iterations}__Points_{training_points}__Lambda_{lbd}__RL_{guess[0]:.2f}__LC_{guess[1]:.2f}")
+    assert int(points*0.1) > int(training_points), f"Training points ({len(training_points)}) must not exceed 10% of Data points from 't' variabler ({len(points)})"
+    
+    SAVE_DIR, SAVE_DIR_GIF = save_paths(f"LBFGS_{LBFGS}__layers_{layers}__neurons_{neurons}__RLC__{R:.2f}_{L:.2f}_{C:.2f}_Iter_{iterations}__Points_{training_points}__Lambda_{lbd}__RL_{guess[0]:.2f}__LC_{guess[1]:.2f}")
     
     # ****************************** Initializating the model ******************************
 
-    X_star, u_star = import_matlab_data(out = "u.mat", inp = "sin.mat")
+    # Creating exact solution
+    t = np.linspace(t_init,t_final,points)
+    Vin = np.array([Vin]*len(t))
+    Vin = Vin[:,np.newaxis]
+    sol = exact_solution(t, R, L, C, Vin, noise, eps = 10**-9)
 
     N_u = training_points   # Number of randomly observed points
     iterations = iterations # Adam descending steps
