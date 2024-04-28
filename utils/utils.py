@@ -38,7 +38,7 @@ def exact_solution(t, R, L, C, Vin, SNR = 0.0, mu = 0, sigma = 1, eps = 10**-9):
         sol = np.abs(A*(1 +(alpha1/(alpha2-alpha1))*np.exp(alpha2*t) -(alpha2/(alpha2-alpha1))*np.exp(alpha1*t)))
 
     # Adding noise 
-    if SNR < 10**3:
+    if SNR < 10**2:
         Vn = A/(10**(SNR/20))
     else :
         Vn = 0

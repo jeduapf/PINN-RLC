@@ -130,10 +130,10 @@ class PhysicsInformedNN:
         self.optimizer = torch.optim.LBFGS(
             self.ann.parameters(), 
             lr=1.0, 
-            max_iter=5000, 
+            max_iter=50000, 
             max_eval=50000, 
-            history_size=50,
-            tolerance_grad=1e-5, 
+            history_size=100,
+            tolerance_grad=1e-8, 
             tolerance_change=1.0 * np.finfo(float).eps,
             line_search_fn="strong_wolfe"       # can be "strong_wolfe"
         )
@@ -187,8 +187,8 @@ class PhysicsInformedNN:
         loss.backward()
         if self.GIF_FIGS is not None:
             if self.iter % self.GIF_FIGS == 0:
-                fig = save_plt(self.iter, self,  self.X_star, self.u_star)
-                file = os.path.join(self.SAVE_DIR_GIF,"pinn_%.8i.png"%(self.nIter + self.iter+1))
+                fig = save_plt(self.nIter + self.iter + 1, self,  self.X_star, self.u_star)
+                file = os.path.join(self.SAVE_DIR_GIF,"pinn_%.8i.png"%(self.nIter + self.iter + 1))
                 fig.savefig(file, dpi=100, facecolor="white")
                 self.files.append(file)
                 plt.close(fig)

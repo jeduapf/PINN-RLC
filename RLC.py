@@ -10,29 +10,30 @@ if __name__ == "__main__":
     # Real System Definitions
     L = 1.5         # Henries
     C = 0.3         # Faradays
-    R = 0.5         # Ohms
-    Vin = 100.0     # V
+    R = 1.2         # Ohms
+    Vin = 1.0     # V
     t_init = 0      # s
-    t_final = 10    # s
+    t_final = 5    # s
     points = 10**4  # -
 
-    noise = 10              # db
+    noise = 10**3              # db
     mu = 0                  # noise center
     sigma = np.sqrt(np.sqrt(Vin))    # noise standard deviation
 
     # Neural Network Hyperparameters
-    training_points = 150 
-    lbd = 10**3 
-    iterations = 2000
-    guess = [10.0, -8.0]
+    training_points = 50 
+    lbd = 10**4 
+    iterations = 3000
+    guess = [0.0, 0.0]
 
     # Neural Network Structure
     LBFGS = True
-    layers = 8
-    neurons = 20
+    layers = 3
+    neurons = 32
 
-   apply_RLC_PINN( t_init, t_final, points, training_points,
-                    R , L, C , Vin ,
+    print(f"\n\n\t\t\tRessonant frequency of RLC at {np.sqrt(1/L/C)}\n\n")
+    apply_RLC_PINN( t_init, t_final, points, training_points,
+                    R , L, C , Vin , noise, mu, sigma,
                     guess, lbd, iterations, LBFGS,
                     layers, neurons,
                     GIF_FIGS = 99,
