@@ -84,7 +84,7 @@ class PhysicsInformedNN:
         So to get y input values of the function h, just cut the matrix as X[:,2] => [y1, y2,..., yn]
                                                                            X[:,2:3] => [[y1, y2,..., yn]]
     '''
-    def __init__(self, X_star, u_star, X_observations, u_observations, R ,L ,C, inputs, outputs, guess, layer, neuron, SHOW_MODEL = False, SHOW_PRINTS= False, SHOW_ITER = 100, GIF_FIGS = 99, SAVE_DIR_GIF = None):
+    def __init__(self, X_star, u_star, X_observations, u_observations, R ,L ,C, u_f, inputs, outputs, guess, layer, neuron, SHOW_MODEL = False, SHOW_PRINTS= False, SHOW_ITER = 100, GIF_FIGS = 99, SAVE_DIR_GIF = None):
         
         # Visualizations variables
         self.SHOW_ITER = SHOW_ITER
@@ -101,8 +101,8 @@ class PhysicsInformedNN:
         self.C = C
 
         # boundary conditions
-        self.lb = torch.tensor(self.X_star.min(0)).float().to(device) # Lower bound
-        self.ub = torch.tensor(self.X_star.max(0)).float().to(device) # Upper bound
+        self.u0 = torch.tensor(self.u_star[0,0]).float().to(device) # Lower bound
+        self.uf = torch.tensor(self.u_star[-1,0]).float().to(device) # Upper bound
         
         # data
         self.t = torch.tensor(X_observations[:, 0:1], requires_grad=True).float().to(device)
@@ -139,6 +139,7 @@ class PhysicsInformedNN:
         )
         
         self.optimizer_Adam = torch.optim.Adam(self.ann.parameters(), lr = 0.01)
+        self.u_f = u_f
         # self.optimizer_Adam = torch.optim.SGD(self.ann.parameters(), lr=0.1, momentum=0.9)
         self.iter = 0
         self.losses = []
@@ -173,12 +174,23 @@ class PhysicsInformedNN:
         return f
     
     def loss_func(self):
+
         u_pred = self.net_u(self.t)
         f_pred = self.net_f(self.t, self.u_in)
+
+        # Data Loss
         loss_u = torch.mean((self.u_observations - u_pred) ** 2)
+
+        # Physiscs Loss
         loss_f = torch.mean(f_pred ** 2)
 
-        loss = loss_u + loss_f
+        # Boundry loss
+        loss_lb = torch.mean((u_pred[0,0] - self.u0 )** 2)
+        loss_ub = torch.mean((u_pred[-1,0] - self.uf )** 2)
+
+        # Calculating total loss
+        loss = self.u_f*loss_u + loss_lb + loss_ub + loss_f
+
         self.losses.append([loss_u.item(),
                     loss_f.item(),
                     loss.item()])
@@ -209,7 +221,7 @@ class PhysicsInformedNN:
                 )
         return loss
     
-    def train(self, nIter, LBFGS, u_f = 10**0):
+    def train(self, nIter, LBFGS):
 
         self.nIter = nIter
         # Setting the model in training mode
@@ -222,13 +234,22 @@ class PhysicsInformedNN:
             print(f'\n\n\t\tSTARTING ADAM !\n\n')
 
         for epoch in range(nIter):
+
             u_pred = self.net_u(self.t)
             f_pred = self.net_f(self.t, self.u_in)
+
+            # Data Loss
             loss_u = torch.mean((self.u_observations - u_pred) ** 2)
+
+            # Physiscs Loss
             loss_f = torch.mean(f_pred ** 2)
 
+            # Boundry loss
+            loss_lb = torch.mean((u_pred[0,0] - self.u0 )** 2)
+            loss_ub = torch.mean((u_pred[-1,0] - self.uf )** 2)
+
             # Calculating total loss
-            loss = u_f*loss_u + loss_f
+            loss = self.u_f*loss_u + loss_f + loss_lb + loss_ub
             self.losses.append([loss_u.item(),
                                 loss_f.item(),
                                 loss.item()])

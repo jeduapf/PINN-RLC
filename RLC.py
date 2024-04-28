@@ -16,20 +16,20 @@ if __name__ == "__main__":
     t_final = 5    # s
     points = 10**4  # -
 
-    noise = 10**3              # db
+    noise = 40              # db
     mu = 0                  # noise center
     sigma = np.sqrt(np.sqrt(Vin))    # noise standard deviation
 
     # Neural Network Hyperparameters
-    training_points = 50 
-    lbd = 10**4 
-    iterations = 3000
-    guess = [0.0, 0.0]
+    training_points = 600 
+    lbd = 10**3 
+    iterations = 1000
+    guess = [2.0, 2.0]
 
     # Neural Network Structure
     LBFGS = True
     layers = 3
-    neurons = 32
+    neurons = 64
 
     print(f"\n\n\t\t\tRessonant frequency of RLC at {np.sqrt(1/L/C)}\n\n")
     apply_RLC_PINN( t_init, t_final, points, training_points,

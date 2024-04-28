@@ -37,6 +37,7 @@ def apply_RLC_PINN( t_init = 0, t_final = 10, points = 10**4, training_points = 
                                 R,
                                 L,
                                 C,
+                                u_f = lambd,
                                 inputs = 1, outputs = 1, 
                                 guess = chute,
                                 layer = layers, neuron = neurons,
@@ -45,7 +46,7 @@ def apply_RLC_PINN( t_init = 0, t_final = 10, points = 10**4, training_points = 
                                 SHOW_ITER = SHOW_ITER,
                                 GIF_FIGS = GIF_FIGS,
                                 SAVE_DIR_GIF = SAVE_DIR_GIF)
-    model.train(nIter = iterations, LBFGS = LBFGS, u_f = lambd)
+    model.train(nIter = iterations, LBFGS = LBFGS)
 
     # ****************************** Evaluating the model ******************************
     
