@@ -1,1 +1,0 @@
-Error u: 1.248080e-02		Error R/L: 90.05676		Error L*C: 6854.73535

@@ -10,6 +10,14 @@ import matplotlib.pyplot as plt
 import mat73
 import os
 
+def get_var_from_freq(f, R, t_final):
+    alpha = 3*np.log(2)/t_final
+
+    L = R/2/alpha
+    C = 1/(4*np.pi*np.pi*f*f*L)
+    
+    return float(L), float(C)
+
 def exact_solution(t, R, L, C, Vin, SNR = 0.0, mu = 0, sigma = 1, eps = 10**-9):
     assert isinstance(R,float) and isinstance(L,float) and isinstance(C,float) and isinstance(Vin,float), "All values R,L,C,Vin must be floats"
     assert R > 0 and L > 0 and C > 0 and Vin > 0, "All values R,L,C,Vin must be greater than 0"

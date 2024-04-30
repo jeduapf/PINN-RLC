@@ -4,15 +4,15 @@ import sys
 def apply_RLC_PINN( t_init = 0, t_final = 10, points = 10**4, training_points = 150,
                     R = 1.2, L = 1.5, C = 0.3, Vin = 10.0, noise = 40, mu = 0, sigma = 1,
                     guess = [10.0, -8.0], lbd = 10**3, iterations = 2000, LBFGS = True,
-                    layers = 8, neurons = 20,
+                    layers = 8, neurons = 20, adam_lr = 0.001,
                     GIF_FIGS = 99,
                     SHOW_ITER = 50,
                     SHOW_PRINTS = False,
                     SHOW_MODEL = False,
                     SAVE_RESULTS = True):  
     
-    assert int(points*0.1) > int(training_points), f"Training points ({len(training_points)}) must not exceed 10% of Data points from 't' variabler ({len(points)})"
-    SAVE_DIR, SAVE_DIR_GIF = save_paths(f"LBFGS_{LBFGS}__layers_{layers}__neurons_{neurons}__RLC__{R:.2f}_{L:.2f}_{C:.2f}_Iter_{iterations}__Points_{training_points}__Lambda_{lbd}__RL_{guess[0]:.2f}__LC_{guess[1]:.2f}")
+    assert int(points*0.1) > training_points, f"Training points ({training_points}) must not exceed 10% of Data points from 't' variabler ({int(points)})"
+    SAVE_DIR, SAVE_DIR_GIF = save_paths(f"ADAM_{adam_lr}__LBFGS_{LBFGS}__layers_{layers}__neurons_{neurons}__RLC__{R:.2f}_{L:.2f}_{C:.2f}_Iter_{iterations}__Points_{training_points}__Lambda_{lbd}__RL_{guess[0]:.2f}__LC_{guess[1]:.2f}")
     
     # ****************************** Initializating the model ******************************
 
@@ -23,7 +23,7 @@ def apply_RLC_PINN( t_init = 0, t_final = 10, points = 10**4, training_points = 
     X_star = np.hstack((t[:,np.newaxis],Vin_vec[:,np.newaxis]))
     u_star = exact_solution(t, R, L, C, Vin, noise, eps = 10**-9)
 
-    N_u = training_points   # Number of randomly observed points
+    N_u = int(training_points)   # Number of randomly observed points
     iterations = iterations # Adam descending steps
     lambd = lbd             # Weight over data loss compared to physics loss
     chute = guess           # R/L  = 0.8, 1/L*C = 2.22 
@@ -41,6 +41,7 @@ def apply_RLC_PINN( t_init = 0, t_final = 10, points = 10**4, training_points = 
                                 inputs = 1, outputs = 1, 
                                 guess = chute,
                                 layer = layers, neuron = neurons,
+                                adam_lr = adam_lr,
                                 SHOW_MODEL = SHOW_MODEL,
                                 SHOW_PRINTS = SHOW_PRINTS, 
                                 SHOW_ITER = SHOW_ITER,

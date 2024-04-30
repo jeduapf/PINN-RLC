@@ -84,7 +84,7 @@ class PhysicsInformedNN:
         So to get y input values of the function h, just cut the matrix as X[:,2] => [y1, y2,..., yn]
                                                                            X[:,2:3] => [[y1, y2,..., yn]]
     '''
-    def __init__(self, X_star, u_star, X_observations, u_observations, R ,L ,C, u_f, inputs, outputs, guess, layer, neuron, SHOW_MODEL = False, SHOW_PRINTS= False, SHOW_ITER = 100, GIF_FIGS = 99, SAVE_DIR_GIF = None):
+    def __init__(self, X_star, u_star, X_observations, u_observations, R ,L ,C, u_f, inputs, outputs, guess, layer, neuron, adam_lr, SHOW_MODEL = False, SHOW_PRINTS= False, SHOW_ITER = 100, GIF_FIGS = 99, SAVE_DIR_GIF = None):
         
         # Visualizations variables
         self.SHOW_ITER = SHOW_ITER
@@ -92,6 +92,7 @@ class PhysicsInformedNN:
         self.GIF_FIGS = GIF_FIGS
         self.SAVE_DIR_GIF = SAVE_DIR_GIF
         self.files = []
+        self.adam_lr = adam_lr
 
         # Ground Truth
         self.X_star = X_star
@@ -132,15 +133,15 @@ class PhysicsInformedNN:
             lr=1.0, 
             max_iter=50000, 
             max_eval=50000, 
-            history_size=100,
+            history_size=500,
             tolerance_grad=1e-8, 
             tolerance_change=1.0 * np.finfo(float).eps,
             line_search_fn="strong_wolfe"       # can be "strong_wolfe"
         )
         
-        self.optimizer_Adam = torch.optim.Adam(self.ann.parameters(), lr = 0.01)
+        self.optimizer_Adam = torch.optim.Adam(self.ann.parameters(), lr = self.adam_lr)
         self.u_f = u_f
-        # self.optimizer_Adam = torch.optim.SGD(self.ann.parameters(), lr=0.1, momentum=0.9)
+        # self.optimizer_Adam = torch.optim.SGD(self.ann.parameters(), lr=self.adam_lr, momentum=0.9)
         self.iter = 0
         self.losses = []
 
@@ -167,9 +168,10 @@ class PhysicsInformedNN:
             create_graph=True
         )[0]
 
-
-        # u_tt = -( R/L )*u_t -( 1/(L*C) )*u + ( 1/(L*C) )*u_in
-        f = u_tt + RL*u_t + LC*u_pinn - LC*u_in
+        # # Constraint values of constants to be positive
+        # RL = torch.abs(RL)
+        # LC = torch.abs(LC)
+        f = u_tt + RL*u_t + LC*u_pinn #- LC*u_in
         
         return f
     
@@ -189,7 +191,7 @@ class PhysicsInformedNN:
         loss_ub = torch.mean((u_pred[-1,0] - self.uf )** 2)
 
         # Calculating total loss
-        loss = self.u_f*loss_u + loss_lb + loss_ub + loss_f
+        loss = self.u_f*loss_u + loss_f + loss_lb + loss_ub 
 
         self.losses.append([loss_u.item(),
                     loss_f.item(),
@@ -250,6 +252,7 @@ class PhysicsInformedNN:
 
             # Calculating total loss
             loss = self.u_f*loss_u + loss_f + loss_lb + loss_ub
+
             self.losses.append([loss_u.item(),
                                 loss_f.item(),
                                 loss.item()])
@@ -306,7 +309,7 @@ class PhysicsInformedNN:
         LC = 1/self.LC.detach().cpu().numpy()
 
         error_lambda_1 = 100*np.abs(RL - self.R/self.L) / (self.R/self.L) 
-        error_lambda_2 = 100*np.abs(LC - self.L*self.C) / (self.L*self.C) 
+        error_lambda_2 = 100*np.abs(1 - (self.L*self.C)/LC)
 
         if self.SHOW_PRINTS:
             print(f'\n\n\t\tMODEL ALL DATA EVALUATION\n\n')
